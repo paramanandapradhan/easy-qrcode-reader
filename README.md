@@ -10,7 +10,7 @@ npm install @cloudparker/easy-qrcode-reader-svelte --save-dev
 
 # Screenshot
 
-<img src="" width="340">
+<img src="https://raw.githubusercontent.com/paramanandapradhan/easy-qrcode-reader/main/static/easy-qrcode-reader.webp" width="340">
 
 
 # Usage
