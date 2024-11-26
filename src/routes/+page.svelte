@@ -4,10 +4,9 @@
 
 	let qrcodeReaderRef: EasyQrcodeReader;
 
-	let clientWidth: number;
+	let clientWidth: number = $state(340);
 
-	const handleQrcode = (ev: CustomEvent) => {
-		let data = ev.detail;
+	const handleQrcode = (data: string) => {
 		if (data) {
 			console.log(data);
 
@@ -28,7 +27,7 @@
 </script>
 
 <div class="camera-container" bind:clientWidth>
-	<EasyQrcodeReader bind:this={qrcodeReaderRef} width={clientWidth} on:qrcode={handleQrcode} />
+	<EasyQrcodeReader bind:this={qrcodeReaderRef} bind:width={clientWidth} onQrcode={handleQrcode} />
 </div>
 
 <style>

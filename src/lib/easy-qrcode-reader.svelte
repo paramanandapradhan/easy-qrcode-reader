@@ -1,18 +1,18 @@
-<script lang="ts" context="module">
-	declare var window: any;
-</script>
-
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import EasyCamera from '@cloudparker/easy-camera-svelte';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import EasyScriptLoader from '@cloudparker/easy-script-loader-svelte';
 
-	export let width: number;
-	export let jsQrUrl = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
-	export let autoScan: boolean = true;
+	type Props = {
+		width?: number;
+		autoScan?: boolean;
+		onQrcode?: (data: string) => void;
+	};
 
-	let cameraRef: EasyCamera;
-	let dispatch = createEventDispatcher();
+	let { width = $bindable(340), autoScan = true, onQrcode }: Props = $props();
+
+	let cameraRef: EasyCamera | null = $state(null);
+
+	let jsQR: any;
 
 	export function pause() {
 		cameraRef && cameraRef.pause();
@@ -34,34 +34,29 @@
 		cameraRef && cameraRef.captureImage();
 	}
 
-	const handleFrame = (ev: CustomEvent) => {
-		let imageData = ev.detail;
-		if (window['jsQR']) {
-			const decodedQRCode = window['jsQR'](imageData.data, imageData.width, imageData.height);
+	const handleFrame = (imageData: ImageData) => {
+		if (jsQR) {
+			const decodedQRCode = jsQR(imageData.data, imageData.width, imageData.height);
 			if (decodedQRCode) {
-				dispatch('qrcode', decodedQRCode.data);
+				onQrcode && onQrcode(decodedQRCode.data);
 			}
 		}
 	};
 
-	onMount(() => {
+	function handleJsQRLoad(lib: any) {
+		jsQR = lib;
+	}
+
+	$effect(() => {
 		return () => {
 			cameraRef && cameraRef.close();
 		};
 	});
 </script>
 
-<svelte:head>
-	{#if browser && !window['jsQR']}
-		<script src={jsQrUrl} type="text/javascript"></script>
-	{/if}
-</svelte:head>
-
-<EasyCamera
-	bind:this={cameraRef}
-	bind:width
-	on:frame={handleFrame}
-	needFrames
-	on:image
-	bind:autoOpen={autoScan}
+<EasyScriptLoader
+	scriptName="jsQR"
+	scriptUrl="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"
+	onLoad={handleJsQRLoad}
 />
+<EasyCamera bind:this={cameraRef} bind:width onFrame={handleFrame} needFrames autoOpen={autoScan} />
